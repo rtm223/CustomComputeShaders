@@ -27,7 +27,7 @@ public:
 	/// </summary>
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_UAV(RWTexture2D<float>, OutputTexture)
-		SHADER_PARAMETER(FVector2D, Dimensions)
+		SHADER_PARAMETER(FVector2f, Dimensions)
 		SHADER_PARAMETER(UINT, TimeStamp)
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -110,7 +110,7 @@ void FWhiteNoiseCSManager::UpdateParameters(FWhiteNoiseCSParameters& params)
 /// Gets a reference to the shader type from the global shaders map
 /// Dispatches the shader using the parameter structure instance
 /// </summary>
-void FWhiteNoiseCSManager::Execute_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext)
+void FWhiteNoiseCSManager::Execute_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures)
 {
 	//If there's no cached parameters to use, skip
 	//If no Render Target is supplied in the cachedParams, skip
@@ -122,6 +122,7 @@ void FWhiteNoiseCSManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	//Render Thread Assertion
 	check(IsInRenderingThread());
 
+	auto& RHICmdList = GraphBuilder.RHICmdList;
 
 	//If the render target is not valid, get an element from the render target pool by supplying a Descriptor
 	if (!ComputeShaderOutput.IsValid())
