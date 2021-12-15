@@ -132,10 +132,9 @@ void FWhiteNoiseCSManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 		GRenderTargetPool.FindFreeElement(RHICmdList, ComputeShaderOutputDesc, ComputeShaderOutput, TEXT("WhiteNoiseCS_Output_RenderTarget"));
 	}
 	
-
-	//Specify the resource transition, we're executing this in post scene rendering so we set it to Graphics to Compute
-	RHICmdList.TransitionResource(EResourceTransitionAccess::ERWBarrier, EResourceTransitionPipeline::EGfxToCompute, ComputeShaderOutput->GetRenderTargetItem().UAV);
-
+	// Specify the resource transition - [RTM note] prior to 4.27 this specified Compute, but was actually ignored under the hood in 4.27. There is an EHRIPipeline::AsycCompute flag, though I'm unsure how we set it
+	// TODO - investigate ERHIPipeline::AsyncCompute
+	RHICmdList.Transition(FRHITransitionInfo(ComputeShaderOutput->GetRenderTargetItem().UAV, ERHIAccess::None, ERHIAccess::ERWBarrier, EResourceTransitionFlags::None));
 
 	//Fill the shader parameters structure with tha cached data supplied by the client
 	FWhiteNoiseCS::FParameters PassParameters;
